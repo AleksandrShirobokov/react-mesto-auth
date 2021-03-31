@@ -9,6 +9,11 @@ import api from '../utils/api'
 import EditProfilePopup from './EditProfilePopup'
 import EditAvatarPopup from './EditAvatarPopup'
 import AddPlacePopup from './AddPlacePopup'
+import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom'
+import Login from './Login'
+import InfoTooltip from './InfoTooltip'
+import Register from './Register'
+import ProtectedRoute from './ProtectedRoute'
 
 function App() {
 
@@ -127,7 +132,9 @@ function App() {
         <div className="page">
             <CurrentUserContext.Provider value={currentUser}>
                 <Header />  
-                <Main 
+                    <Switch>
+                        <Route exact path="/">
+                        <Main 
                 onEditProfile={handleEditProfileClick}
                 onAddPlace={handleAddPlaceClick}
                 onEditAvatar={handleEditAvatarClick}
@@ -136,6 +143,9 @@ function App() {
                 onCardLike={handleCardLike}
                 onCardDelete={handleDeleteCard}
                 />
+                        </Route>
+                    </Switch>
+                
                 <Footer />
 
                 <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onOverlayClose={handleOverlayClose} onUpdateUser={handleUpdateUser}></EditProfilePopup>
@@ -149,7 +159,6 @@ function App() {
                 <PopupWithForm name="delete" title="Вы уверены?" /* isOpen="popup_opened" *//>
             </CurrentUserContext.Provider>
         </div>
-
     </>  
   );
   
