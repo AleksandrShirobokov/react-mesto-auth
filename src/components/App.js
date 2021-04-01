@@ -23,7 +23,9 @@ function App() {
     const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = React.useState(false); 
     const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = React.useState(false); 
     const [selectedCard, setSelectedCard] = React.useState({});
-    const [isPopupImageOpen, setPopupImageOpen] = React.useState(false)
+    const [isPopupImageOpen, setPopupImageOpen] = React.useState(false);
+    const [isInfoTooltipOpen, setInfoTooltipOpen] = React.useState(false);
+    const [loggedIn, setLoggedIn] = React.useState(false);
 
     useEffect(() => {
         Promise.all([
@@ -48,6 +50,10 @@ function App() {
 
     function handleAddPlaceClick() {
         setIsAddPlacePopupOpen(true);
+    }
+
+    function handleInfoTooltipClick() {
+        setInfoTooltipOpen(true);
     }
 
     function handleCardClick(card) {
@@ -135,15 +141,22 @@ function App() {
                     <Switch>
                         <Route exact path="/">
                         <Main 
-                onEditProfile={handleEditProfileClick}
-                onAddPlace={handleAddPlaceClick}
-                onEditAvatar={handleEditAvatarClick}
-                onCardClick={handleCardClick}
-                cards={cards}
-                onCardLike={handleCardLike}
-                onCardDelete={handleDeleteCard}
+                            onEditProfile={handleEditProfileClick}
+                            onAddPlace={handleAddPlaceClick}
+                            onEditAvatar={handleEditAvatarClick}
+                            onCardClick={handleCardClick}
+                            cards={cards}
+                            onCardLike={handleCardLike}
+                            onCardDelete={handleDeleteCard}
                 />
                         </Route>
+                        <Route path="/sign-up">
+                            <Register />
+                        </Route>
+                        <Route path="/sign-in">
+                            <Login />
+                        </Route>
+                        
                     </Switch>
                 
                 <Footer />
@@ -155,6 +168,8 @@ function App() {
                 <AddPlacePopup isOpen={isAddPlacePopupOpen} onClose={closeAllPopups} onOverlayClose={handleOverlayClose} onAddCard={handleAddPlaceSubmit}></AddPlacePopup>
                     
                 <ImagePopup card={selectedCard} isOpen={isPopupImageOpen} onClose={closeAllPopups} onOverlayClose={handleOverlayClose}/> 
+
+                <InfoTooltip isOpen={isInfoTooltipOpen} onClose={closeAllPopups} onOverlayClose={handleOverlayClose} onSign={handleInfoTooltipClick} /> 
 
                 <PopupWithForm name="delete" title="Вы уверены?" /* isOpen="popup_opened" *//>
             </CurrentUserContext.Provider>
