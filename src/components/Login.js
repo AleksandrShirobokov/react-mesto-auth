@@ -1,42 +1,51 @@
 import React from 'react'
-import { withRouter } from 'react-router-dom';
+import * as auth from '../utils/auth'
+import { useHistory } from 'react-router-dom'
 
-class Login extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            username: '',
-            password: ''
-        }
-        this.handleChange = this.handleChange.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this)
-    }
+function Login(props) {
+    const history = useHistory();
+ 
+    const [info, setInfo] = React.useState({
+        password:'',
+        email:''
+    })
 
-    handleChange(e) {
+    function handleChange(e) {
         const {name, value} = e.target;
-        this.setState({
+        setInfo({
+            ...info,
             [name]: value
         });
     }
 
-    handleSubmit(e) {
-        e.preventDefault()
+    function handleSubmit(e) {
+        e.preventDefault();
+        if(!info.password || !info.email) {
+            return
+        }
+        auth.authorize(info.password, info.email)
+        .then((data) => {
+            console.log(data)
+            if(data.token) {
+                setInfo({password:'', email:''});
+                    props.onLogin();
+                    history.push('/');  
+            }
+        })
+        .catch(err => console.log(err))
     }
 
-    render(){
         return(
           <div className="login">
             <p className="login__enter">
               Вход
             </p>
-            <form onSubmit={this.handleSubmit} className="login__form">
-                <input className="login__input login__input_type_username" placeholder="Email" required id="username" name="username" type="text" value={this.state.username} onChange={this.handleChange} />
-                <input className="login__input login__input_type_password" placeholder="Пароль" required id="password" name="password" type="password" value={this.state.password} onChange={this.handleChange} />
+            <form onSubmit={handleSubmit} className="login__form">
+                <input className="login__input login__input_type_username" placeholder="Email" required id="email" name="email" type="text" value={info.email} onChange={handleChange} />
+                <input className="login__input login__input_type_password" placeholder="Пароль" required id="password" name="password" type="password" value={info.password} onChange={handleChange} />
                 <button type="submit" className="login__link login__button">Войти</button>  
             </form>
           </div>
         )
-    }
 }
-
-export default withRouter(Login)
+export default Login;

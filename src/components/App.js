@@ -9,11 +9,12 @@ import api from '../utils/api'
 import EditProfilePopup from './EditProfilePopup'
 import EditAvatarPopup from './EditAvatarPopup'
 import AddPlacePopup from './AddPlacePopup'
-import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom'
+import { Route, Switch, Redirect, useHistory } from 'react-router-dom'
 import Login from './Login'
 import InfoTooltip from './InfoTooltip'
 import Register from './Register'
 import ProtectedRoute from './ProtectedRoute'
+import * as auth from '../utils/auth'
 
 function App() {
 
@@ -26,6 +27,10 @@ function App() {
     const [isPopupImageOpen, setPopupImageOpen] = React.useState(false);
     const [isInfoTooltipOpen, setInfoTooltipOpen] = React.useState(false);
     const [loggedIn, setLoggedIn] = React.useState(false);
+    const [email, setEmail] = React.useState('');
+    const [resSuccess, setResSuccess] = React.useState(false)
+
+    const history = useHistory();
 
     useEffect(() => {
         Promise.all([
@@ -39,6 +44,10 @@ function App() {
         })
         .catch(err=>console.log(err))
     },[])
+
+    function handleLogin() {
+        setLoggedIn(true);
+    }
 
     function handleEditAvatarClick() {
         setIsEditAvatarPopupOpen(true);
@@ -66,6 +75,7 @@ function App() {
         setIsEditProfilePopupOpen(false);
         setIsAddPlacePopupOpen(false);
         setPopupImageOpen(false)
+        setInfoTooltipOpen(false)
     }
 
     function handleOverlayClose(evt) {
@@ -133,14 +143,53 @@ function App() {
         .catch(err=>console.log(err))
     }
 
+    function signOut() {
+        localStorage.removeItem('token');
+        history.push('/sign-in');
+    }
+
+    function handleRegisterSubmit(password, email) {
+        auth.register(password, email)
+        .then((res) => {
+            console.log(res)
+            if(res) {
+                history.push('/sign-in')
+                setInfoTooltipOpen(true)
+                setResSuccess(true)
+            } 
+        })
+        .catch(() => {
+            setInfoTooltipOpen(true)
+            setResSuccess(false)
+        }) 
+    }
+
+    React.useEffect(() => {
+        function handleTokenCheck() {
+            const token = localStorage.getItem('token');
+            if(token) {
+                auth.getContent(token)
+                .then((res) => {
+                    if(res) {
+                      history.push('/')
+                      handleLogin();
+                      setEmail(res.data.email)  
+                    }
+                })
+                .catch(err => console.log(err) )
+            }
+    }
+    handleTokenCheck();
+    },[history, loggedIn])
+
     return (
     <>
         <div className="page">
             <CurrentUserContext.Provider value={currentUser}>
-                <Header />  
+                <Header email={email} onSignOut={signOut} />  
                     <Switch>
-                        <Route exact path="/">
-                        <Main 
+                        <ProtectedRoute 
+                            exact path="/"
                             onEditProfile={handleEditProfileClick}
                             onAddPlace={handleAddPlaceClick}
                             onEditAvatar={handleEditAvatarClick}
@@ -148,13 +197,18 @@ function App() {
                             cards={cards}
                             onCardLike={handleCardLike}
                             onCardDelete={handleDeleteCard}
-                />
-                        </Route>
+                            loggedIn={loggedIn}
+                            component={Main}
+                        /> 
+
                         <Route path="/sign-up">
-                            <Register />
+                            <Register onRegister={handleRegisterSubmit} />
                         </Route>
                         <Route path="/sign-in">
-                            <Login />
+                            <Login onLogin={handleLogin} />
+                        </Route>
+                        <Route>
+                            {loggedIn ? <Redirect to="/" /> : <Redirect to="/sign-in" />}
                         </Route>
                         
                     </Switch>
@@ -169,7 +223,16 @@ function App() {
                     
                 <ImagePopup card={selectedCard} isOpen={isPopupImageOpen} onClose={closeAllPopups} onOverlayClose={handleOverlayClose}/> 
 
-                <InfoTooltip isOpen={isInfoTooltipOpen} onClose={closeAllPopups} onOverlayClose={handleOverlayClose} onSign={handleInfoTooltipClick} /> 
+                <InfoTooltip 
+                isOpen={isInfoTooltipOpen} 
+                onClose={closeAllPopups} 
+                onOverlayClose={handleOverlayClose} 
+                onSign={handleInfoTooltipClick} 
+                onResponse={resSuccess}
+                regSuccess='Вы успешно зарегистрировались!'
+                regUnsaccess='Что-то пошло не так... Попробуйте ещё раз'
+
+                /> 
 
                 <PopupWithForm name="delete" title="Вы уверены?" /* isOpen="popup_opened" *//>
             </CurrentUserContext.Provider>
