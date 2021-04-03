@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom'
 
 function Login(props) {
     const history = useHistory();
- 
+    /* const [message, setMessage] = React.useState('') */
     const [info, setInfo] = React.useState({
         password:'',
         email:''
@@ -25,14 +25,20 @@ function Login(props) {
         }
         auth.authorize(info.password, info.email)
         .then((data) => {
-            console.log(data)
             if(data.token) {
                 setInfo({password:'', email:''});
                     props.onLogin();
                     history.push('/');  
             }
         })
-        .catch(err => console.log(err))
+        .catch((err) => {
+            if(err === 400) {
+                console.log('*Не передано одно из полей')
+            } 
+            if(err === 401) {
+                console.log('*Пользователь с email не найден')
+            }    
+        })
     }
 
         return(

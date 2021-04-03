@@ -29,6 +29,7 @@ function App() {
     const [loggedIn, setLoggedIn] = React.useState(false);
     const [email, setEmail] = React.useState('');
     const [resSuccess, setResSuccess] = React.useState(false)
+    const [message, setMessage] = React.useState('');
 
     const history = useHistory();
 
@@ -151,16 +152,19 @@ function App() {
     function handleRegisterSubmit(password, email) {
         auth.register(password, email)
         .then((res) => {
-            console.log(res)
             if(res) {
                 history.push('/sign-in')
                 setInfoTooltipOpen(true)
                 setResSuccess(true)
+                setMessage('');
             } 
         })
-        .catch(() => {
+        .catch((err) => {
             setInfoTooltipOpen(true)
             setResSuccess(false)
+            if(err === 400) {
+            setMessage('*Некорректно заполнено одно из полей')
+            } 
         }) 
     }
 
@@ -176,7 +180,14 @@ function App() {
                       setEmail(res.data.email)  
                     }
                 })
-                .catch(err => console.log(err) )
+                .catch((err) => {
+                    if(err === 401) {
+                        console.log('*Токен не передан или передан не в том формате')
+                    }
+                    if(err === 401) {
+                        console.log('*Переданный токен некорректен')
+                    }
+                })
             }
     }
     handleTokenCheck();
@@ -231,7 +242,7 @@ function App() {
                 onResponse={resSuccess}
                 regSuccess='Вы успешно зарегистрировались!'
                 regUnsaccess='Что-то пошло не так... Попробуйте ещё раз'
-
+                onMessage={message}
                 /> 
 
                 <PopupWithForm name="delete" title="Вы уверены?" /* isOpen="popup_opened" *//>
