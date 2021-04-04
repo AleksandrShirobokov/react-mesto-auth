@@ -147,8 +147,9 @@ function App() {
     function signOut() {
         localStorage.removeItem('token');
         history.push('/sign-in');
+        setLoggedIn(false);
     }
-
+                // REGISTRATION //
     function handleRegisterSubmit(password, email) {
         auth.register(password, email)
         .then((res) => {
@@ -167,7 +168,25 @@ function App() {
             } 
         }) 
     }
-
+                 // LOGIN //
+    function handleLoginSubmit(password, email) {
+        auth.authorize(password, email)
+        .then((data) => {
+            if(data.token) {
+                    handleLogin();
+                    history.push('/');  
+            }
+        })
+        .catch((err) => {
+            if(err === 400) {
+                console.log('*Не передано одно из полей')
+            } 
+            if(err === 401) {
+                console.log('*Пользователь с email не найден')
+            }    
+        })
+    }
+                // TOKEN //
     React.useEffect(() => {
         function handleTokenCheck() {
             const token = localStorage.getItem('token');
@@ -216,7 +235,7 @@ function App() {
                             <Register onRegister={handleRegisterSubmit} />
                         </Route>
                         <Route path="/sign-in">
-                            <Login onLogin={handleLogin} />
+                            <Login onLogin={handleLoginSubmit} />
                         </Route>
                         <Route>
                             {loggedIn ? <Redirect to="/" /> : <Redirect to="/sign-in" />}
@@ -226,13 +245,33 @@ function App() {
                 
                 <Footer />
 
-                <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onOverlayClose={handleOverlayClose} onUpdateUser={handleUpdateUser}></EditProfilePopup>
+                <EditProfilePopup 
+                isOpen={isEditProfilePopupOpen} 
+                onClose={closeAllPopups} 
+                onOverlayClose={handleOverlayClose} 
+                onUpdateUser={handleUpdateUser}>
+                </EditProfilePopup>
 
-                <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups} onOverlayClose={handleOverlayClose} onUpdateAvatar={handleUpdateAvatar}></EditAvatarPopup>
+                <EditAvatarPopup 
+                isOpen={isEditAvatarPopupOpen} 
+                onClose={closeAllPopups} 
+                onOverlayClose={handleOverlayClose} 
+                onUpdateAvatar={handleUpdateAvatar}>
+                </EditAvatarPopup>
 
-                <AddPlacePopup isOpen={isAddPlacePopupOpen} onClose={closeAllPopups} onOverlayClose={handleOverlayClose} onAddCard={handleAddPlaceSubmit}></AddPlacePopup>
+                <AddPlacePopup 
+                isOpen={isAddPlacePopupOpen} 
+                onClose={closeAllPopups} 
+                onOverlayClose={handleOverlayClose} 
+                onAddCard={handleAddPlaceSubmit}>
+                </AddPlacePopup>
                     
-                <ImagePopup card={selectedCard} isOpen={isPopupImageOpen} onClose={closeAllPopups} onOverlayClose={handleOverlayClose}/> 
+                <ImagePopup 
+                card={selectedCard} 
+                isOpen={isPopupImageOpen} 
+                onClose={closeAllPopups} 
+                onOverlayClose={handleOverlayClose}
+                /> 
 
                 <InfoTooltip 
                 isOpen={isInfoTooltipOpen} 
